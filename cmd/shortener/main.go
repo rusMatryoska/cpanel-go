@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/rusMatryoska/internal/config"
+	"github.com/rusMatryoska/cpanel-go/internal/config"
 
 	"golang.org/x/exp/slog"
 )
@@ -18,10 +18,15 @@ const (
 func main() {
 
 	cfg := config.MustLoad()
-
-	fmt.Println(cfg) // TODO: delete this log
-
+	fmt.Println(cfg) // TODO: delete
 	log := setupLogger(cfg.Env)
+
+	log.Info(
+		"starting url-shortener",
+		slog.String("env", cfg.Env),
+		slog.String("version", "123"),
+	)
+	log.Debug("debug messages are enabled")
 
 	// TODO: init storage
 

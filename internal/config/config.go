@@ -1,12 +1,11 @@
 package config
 
 import (
-	"ioutil"
 	"log"
 	"os"
 	"time"
 
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
@@ -31,7 +30,9 @@ type Storage struct {
 	Password string `yaml:"password" env-required:"true" env:"DB_PASSWORD"`
 }
 
-func (cfg *Config) MustLoad() *Config {
+func MustLoad() *Config {
+	cfg := &Config{}
+	os.Setenv("CONFIG_PATH", "/home/victoria/Desktop/cpanel-go/config/local.yaml") //TODO: delete
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
 		log.Fatal("CONFIG_PATH is not set")
@@ -43,11 +44,11 @@ func (cfg *Config) MustLoad() *Config {
 	}
 
 	// check readable of file
-	if yamlFile, err := ioutil.ReadFile(configPath); err != nil {
+	if yamlFile, err := os.ReadFile(configPath); err != nil {
 		log.Fatalf("yamlFile.Get err   #%v ", err)
 	} else {
 		// if file is readable, do unmarshall
-		if err := yaml.Unmarshall(yamlFile, cfg); err != nil {
+		if err := yaml.Unmarshal(yamlFile, cfg); err != nil {
 			log.Fatalf("Unmarshal: %v", err)
 		}
 	}

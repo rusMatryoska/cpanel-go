@@ -1,4 +1,4 @@
-module cpanel-go/v2
+module github.com/rusMatryoska/cpanel-go
 
 go 1.22.1
 
