@@ -6,6 +6,6 @@ http_server:
   user: "test_user"
 storage:
   address: "localhost:5432"
-  db_name: "dev"
+  db_name: "habrdb"
   schema: "va"
-  user: "test_user"
+  user: "habrpguser"

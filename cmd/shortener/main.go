@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/rusMatryoska/cpanel-go/internal/config"
+	"github.com/rusMatryoska/cpanel-go/internal/storage/postgresql"
 
 	"golang.org/x/exp/slog"
 )
@@ -17,8 +19,10 @@ const (
 
 func main() {
 
+	ctx := context.Background()
+
 	cfg := config.MustLoad()
-	fmt.Println(cfg) // TODO: delete
+
 	log := setupLogger(cfg.Env)
 
 	log.Info(
@@ -28,7 +32,24 @@ func main() {
 	)
 	log.Debug("debug messages are enabled")
 
-	// TODO: init storage
+	/////////////////////////////////////////////////////////
+
+	DBItem := &postgresql.Database{
+		DBConnURL: fmt.Sprintf("postgres://%s:%s@%s/%s", cfg.Storage.User, "pgpwd4habr", cfg.Storage.Address, cfg.Storage.DBName),
+	}
+
+	pool, err := DBItem.GetDBConnection(ctx)
+
+	if err != "" {
+		log.Error(err)
+	}
+
+	defer pool.Close()
+
+	// DBItem.ConnPool = pool
+	// DBItem.DBErrorConnect = dbErrorConnect
+
+	// st = storage.Storage(DBItem)
 
 	// TODO: init router
 
