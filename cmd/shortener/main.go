@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"internal/config/config"
 	"os"
+
+	"github.com/rusMatryoska/internal/config"
 
 	"golang.org/x/exp/slog"
 )
@@ -20,7 +21,7 @@ func main() {
 
 	fmt.Println(cfg) // TODO: delete this log
 
-	// TODO: init logger
+	log := setupLogger(cfg.Env)
 
 	// TODO: init storage
 
@@ -34,7 +35,9 @@ func setupLogger(env string) *slog.Logger {
 
 	switch env {
 	case envLocal:
-		log = setupPrettySlog()
+		log = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
+		)
 	case envDev:
 		log = slog.New(
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
@@ -50,16 +53,4 @@ func setupLogger(env string) *slog.Logger {
 	}
 
 	return log
-}
-
-func setupPrettySlog() *slog.Logger {
-	opts := slogpretty.PrettyHandlerOptions{
-		SlogOpts: &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		},
-	}
-
-	handler := opts.NewPrettyHandler(os.Stdout)
-
-	return slog.New(handler)
 }
