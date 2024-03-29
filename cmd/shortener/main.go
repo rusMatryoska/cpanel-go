@@ -3,11 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/rusMatryoska/cpanel-go/internal/config"
+	"github.com/rusMatryoska/cpanel-go/internal/http-server/handlers/incidents"
 	"github.com/rusMatryoska/cpanel-go/internal/storage/postgresql"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"golang.org/x/exp/slog"
 )
 
@@ -32,28 +36,45 @@ func main() {
 	)
 	log.Debug("debug messages are enabled")
 
-	/////////////////////////////////////////////////////////
-
 	DBItem := &postgresql.Database{
 		DBConnURL: fmt.Sprintf("postgres://%s:%s@%s/%s", cfg.Storage.User, "pgpwd4habr", cfg.Storage.Address, cfg.Storage.DBName),
+		Schema:    cfg.Storage.Schema,
 	}
 
 	pool, err := DBItem.GetDBConnection(ctx)
-
 	if err != "" {
 		log.Error(err)
+		os.Exit(1)
 	}
+
+	DBItem.ConnPool = pool
 
 	defer pool.Close()
 
-	// DBItem.ConnPool = pool
-	// DBItem.DBErrorConnect = dbErrorConnect
+	router := chi.NewRouter()
 
-	// st = storage.Storage(DBItem)
+	router.Use(middleware.RequestID)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.URLFormat)
 
-	// TODO: init router
+	router.Get("/incidents/{id}", incidents.GetIncidentByID(ctx, log, DBItem))
 
-	// TODO: run server
+	log.Info("starting server", slog.String("address", cfg.HTTPServer.Address))
+
+	srv := &http.Server{
+		Addr:         cfg.HTTPServer.Address,
+		Handler:      router,
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
+	}
+
+	if err := srv.ListenAndServe(); err != nil {
+		log.Error("failed to start server")
+	}
+
+	log.Info("server stopped")
 }
 
 func setupLogger(env string) *slog.Logger {

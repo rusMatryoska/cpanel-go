@@ -6,13 +6,12 @@ import (
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"golang.org/x/exp/slog"
 )
 
 type Database struct {
 	DBConnURL string
 	ConnPool  *pgxpool.Pool
-	Log       *slog.Logger
+	Schema    string
 }
 
 func (db *Database) GetDBConnection(ctx context.Context) (*pgxpool.Pool, string) {
